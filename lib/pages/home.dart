@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_circular_text/circular_text/model.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_circular_text/circular_text.dart';
 
 class Home extends StatefulWidget {
@@ -34,11 +35,17 @@ class _HomeState extends State<Home> {
   String _selectedWeightType = 'kg';
   String _selectedHeightType = 'cm';
   String category = "...";
+  String weightDifference = '...';
 
   Color pointerColor = Colors.blue;
 
   double _bmi = 0.0;
-  double weightDifference = 0.0;
+
+  double x = 0.0,
+      y = 0.0,
+      z = 0.0;
+  String weightLowerBound = '...';
+  String weightHigherBound = '...';
 
   @override
   void dispose() {
@@ -88,7 +95,26 @@ class _HomeState extends State<Home> {
     });
   }
 
+  void updateWeightRange(double height, double weight) {
+    x = (height / 100) * (height / 100) * 18.5;
+    y = (height / 100) * (height / 100) * 24.9;
+
+    weightLowerBound = x.toStringAsFixed((1));
+    weightHigherBound = y.toStringAsFixed(1);
+
+    if (weight < x) {
+      z = x - weight;
+      weightDifference = z.toStringAsFixed(1);
+      weightDifference += " kg less";
+    } else if (weight > y) {
+      z = weight - y;
+      weightDifference = z.toStringAsFixed(1);
+      weightDifference += " kg more";
+    }
+  }
+
   double calculateBMI(double height, double weight) {
+    updateWeightRange(height, weight);
     return weight / ((height / 100) * (height / 100));
   }
 
@@ -112,206 +138,255 @@ class _HomeState extends State<Home> {
     return weight;
   }
 
+  void reset() {
+    _heightText = '';
+    _weightText = '';
+    _selectedWeightType = 'kg';
+    _selectedHeightType = 'cm';
+    category = "...";
+    weightDifference = '...';
+
+    pointerColor = Colors.blue;
+
+    _bmi = 0.0;
+
+    x = 0.0;
+    y = 0.0;
+    z = 0.0;
+    weightLowerBound = '...';
+    weightHigherBound = '...';
+
+    _heightController.text = "";
+    _weightController.text = "";
+    _feetController.text = "";
+    _inchesController.text = "";
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      backgroundColor: Colors.blue[100],
-      appBar: AppBar(
-        title: Text(
-          'BMI Calculator',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.blue,
-      ),
-      resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 30, 30, 0),
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+          backgroundColor: Colors.blue[100],
+          appBar: AppBar(
+            title: Text(
+              'BMI Calculator',
+              style: TextStyle(color: Colors.white),
+            ),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  Icons.clear,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  setState(() {
+                    reset();
+                  });
+                },
+              ),
+            ],
+            backgroundColor: Colors.blue,
+          ),
+          resizeToAvoidBottomInset: false,
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(15, 10, 20, 0),
+              child: Column(
                 children: [
-                  Expanded(
-                      child: Text(
-                    'Height',
-                    style: TextStyle(
-                        fontSize: 20.0,
-                        letterSpacing: 1.5,
-                        fontWeight: FontWeight.bold),
-                  )),
-                  SizedBox(
-                    width: 8.0,
-                  ),
-                  if (_selectedHeightType == 'cm')
-                    Expanded(
-                      flex: 2,
-                      child: TextField(
-                        controller: _heightController,
-                        onChanged: (value) {
+                  //height field
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                          child: Text(
+                            'Height',
+                            style: TextStyle(
+                                fontSize: 20.0,
+                                letterSpacing: 1.5,
+                                fontWeight: FontWeight.bold),
+                          )),
+                      SizedBox(
+                        width: 8.0,
+                      ),
+                      if (_selectedHeightType == 'cm')
+                        Expanded(
+                          flex: 2,
+                          child: TextField(
+                            controller: _heightController,
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              setState(() {
+                                _heightText = value;
+                                updateBMI();
+                              });
+                            },
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 18.0, letterSpacing: 1.5),
+                            decoration: InputDecoration(
+                              border: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.lightBlue),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        Expanded(
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    flex: 1,
+                                    child: TextField(
+                                      controller: _feetController,
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (value) {
+                                        updateBMIFromFeetInches();
+                                      },
+                                      textAlign: TextAlign.center,
+                                      style:
+                                      TextStyle(
+                                          fontSize: 18.0, letterSpacing: 1.5),
+                                      decoration: InputDecoration(
+                                        border: UnderlineInputBorder(
+                                          borderSide:
+                                          BorderSide(color: Colors.lightBlue),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    '\′',
+                                    style: TextStyle(fontSize: 25.0),
+                                  ),
+                                  SizedBox(width: 20.0),
+                                  Expanded(
+                                    flex: 1,
+                                    child: TextField(
+                                      controller: _inchesController,
+                                      keyboardType: TextInputType.number,
+                                      onChanged: (value) {
+                                        updateBMIFromFeetInches();
+                                      },
+                                      textAlign: TextAlign.center,
+                                      style:
+                                      TextStyle(
+                                          fontSize: 18.0, letterSpacing: 1.5),
+                                      decoration: InputDecoration(
+                                        border: UnderlineInputBorder(
+                                          borderSide:
+                                          BorderSide(color: Colors.lightBlue),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    '\′\′',
+                                    style: TextStyle(fontSize: 25.0),
+                                  ),
+                                ],
+                              ),
+                            )),
+                      SizedBox(width: 40),
+                      DropdownButton<String>(
+                        value: _selectedHeightType,
+                        onChanged: (newValue) {
                           setState(() {
-                            _heightText = value;
+                            _selectedHeightType = newValue!;
                             updateBMI();
                           });
                         },
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 18.0, letterSpacing: 1.5),
-                        decoration: InputDecoration(
-                          border: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.lightBlue),
+                        dropdownColor: Colors.blue[100],
+                        underline: Container(),
+                        items: <String>['ft', 'cm']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 15),
+
+                  //weight field
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                          child: Text(
+                            'Weight',
+                            style: TextStyle(
+                                fontSize: 20.0,
+                                letterSpacing: 1.5,
+                                fontWeight: FontWeight.bold),
+                          )),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: TextField(
+                          controller: _weightController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            setState(() {
+                              _weightText = value;
+                              updateBMI();
+                            });
+                          },
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18.0, letterSpacing: 1.5),
+                          decoration: InputDecoration(
+                            border: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.lightBlue),
+                            ),
                           ),
                         ),
                       ),
-                    )
-                  else
-                    Expanded(
-                        child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: TextField(
-                              controller: _feetController,
-                              onChanged: (value) {
-                                updateBMIFromFeetInches();
-                              },
-                              textAlign: TextAlign.center,
-                              style:
-                                  TextStyle(fontSize: 18.0, letterSpacing: 1.5),
-                              decoration: InputDecoration(
-                                border: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.lightBlue),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '\′',
-                            style: TextStyle(fontSize: 25.0),
-                          ),
-                          SizedBox(width: 20.0),
-                          Expanded(
-                            flex: 1,
-                            child: TextField(
-                              controller: _inchesController,
-                              onChanged: (value) {
-                                updateBMIFromFeetInches();
-                              },
-                              textAlign: TextAlign.center,
-                              style:
-                                  TextStyle(fontSize: 18.0, letterSpacing: 1.5),
-                              decoration: InputDecoration(
-                                border: UnderlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.lightBlue),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '\′\′',
-                            style: TextStyle(fontSize: 25.0),
-                          ),
-                        ],
+                      SizedBox(width: 40),
+                      DropdownButton<String>(
+                        value: _selectedWeightType,
+                        onChanged: (newValue) {
+                          setState(() {
+                            _selectedWeightType = newValue!;
+                            updateBMI();
+                          });
+                        },
+                        dropdownColor: Colors.blue[100],
+                        underline: Container(),
+                        items: <String>['kg', 'lb', 'st']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                       ),
-                    )),
-                  SizedBox(width: 40),
-                  DropdownButton<String>(
-                    value: _selectedHeightType,
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedHeightType = newValue!;
-                        updateBMI();
-                      });
-                    },
-                    dropdownColor: Colors.blue[100],
-                    underline: Container(),
-                    items: <String>['ft', 'cm']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                    ],
                   ),
-                ],
-              ),
 
-              SizedBox(height: 15),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                      child: Text(
-                    'Weight',
-                    style: TextStyle(
-                        fontSize: 20.0,
-                        letterSpacing: 1.5,
-                        fontWeight: FontWeight.bold),
-                  )),
                   SizedBox(
-                    width: 10,
+                    height: 30.0,
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: TextField(
-                      controller: _weightController,
-                      onChanged: (value) {
-                        setState(() {
-                          _weightText = value;
-                          updateBMI();
-                        });
-                      },
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18.0, letterSpacing: 1.5),
-                      decoration: InputDecoration(
-                        border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.lightBlue),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 40),
-                  DropdownButton<String>(
-                    value: _selectedWeightType,
-                    onChanged: (newValue) {
-                      setState(() {
-                        _selectedWeightType = newValue!;
-                        updateBMI();
-                      });
-                    },
-                    dropdownColor: Colors.blue[100],
-                    underline: Container(),
-                    items: <String>['kg', 'lb', 'st']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
 
-              SizedBox(
-                height: 20.0,
-              ),
-
-              Align(
-                child: SfRadialGauge(
-                  axes: [
-                    RadialAxis(
+                  //Gauge Pointer
+                  Align(
+                    child: SfRadialGauge(
+                      axes: [
+                      RadialAxis(
                       startAngle: 180,
                       endAngle: 0,
                       minimum: 0,
                       maximum: 45,
-                      canRotateLabels: true,
+                      showLabels: false,
                       canScaleToFit: true,
+
                       labelOffset: 65,
                       // Adjust distance between labels and axis line
                       maximumLabels: 3,
@@ -322,9 +397,6 @@ class _HomeState extends State<Home> {
                           startValue: 0,
                           endValue: 15,
                           color: Colors.blueAccent,
-                          label: 'Underweight',
-                          labelStyle:
-                              GaugeTextStyle(fontSize: 15, color: Colors.white),
                         ),
                         GaugeRange(
                           startWidth: 70,
@@ -332,9 +404,6 @@ class _HomeState extends State<Home> {
                           startValue: 15,
                           endValue: 30,
                           color: Colors.green,
-                          label: 'Normal',
-                          labelStyle:
-                              GaugeTextStyle(fontSize: 15, color: Colors.white),
                         ),
                         GaugeRange(
                           startWidth: 70,
@@ -342,9 +411,10 @@ class _HomeState extends State<Home> {
                           startValue: 30,
                           endValue: 45,
                           color: Colors.red,
-                          label: 'Overweight',
-                          labelStyle:
-                              GaugeTextStyle(fontSize: 15, color: Colors.white),
+                          //   label: 'Overweight',
+                          //   labelStyle:
+                          //       GaugeTextStyle(fontSize: 15, color: Colors.white),
+                          //
                         ),
                       ],
                       pointers: [
@@ -360,6 +430,7 @@ class _HomeState extends State<Home> {
                         ),
                       ],
                       annotations: [
+                        //bmivalue
                         GaugeAnnotation(
                           widget: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -368,200 +439,375 @@ class _HomeState extends State<Home> {
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20)),
-                              Text('${_bmi.toStringAsFixed(2)}',
+                              Text('${_bmi.toStringAsFixed(1)}',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 20)),
+                                      fontSize: 20,
+                                      color: pointerColor)),
                             ],
                           ),
-                        )
+                        ),
+
+                        GaugeAnnotation(
+                          axisValue: 0,
+                          positionFactor: 0.38,
+                          widget: Padding(
+                              padding: EdgeInsets.only(right: 60.0),
+                              child: Text('16')),
+                        ),
+                        GaugeAnnotation(
+                          axisValue: 45,
+                          positionFactor: 0.7,
+                          widget: Padding(
+                              padding: EdgeInsets.only(right: 60.0),
+                              child: Text('40')),
+                        ),
+                        GaugeAnnotation(
+                          axisValue: 21.5,
+                          positionFactor: 0.49,
+                          widget: Padding(
+                            padding: EdgeInsets.only(right: 60.0),
+                            child: Text('18.5')
+                          ),
+                        ),
+                          GaugeAnnotation(
+                            axisValue: 32,
+                            positionFactor: 0.62,
+                            widget: Padding(
+                                padding: EdgeInsets.only(right: 60.0),
+                                child: Text('25')),
+                          ),
+                          //Normal
+                          GaugeAnnotation(
+                            axisValue: 36,
+                            positionFactor: 0.25,
+                            widget: Padding(
+                                padding: EdgeInsets.only(right: 60.0),
+                                child: CircularText(
+                                  children: [
+                                    TextItem(
+                                      text: Text('Normal',
+                                          style: GoogleFonts.aBeeZee(
+                                            textStyle: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold),
+                                          )),
+                                      space: 6,
+                                      startAngle: -103,
+                                    )
+                                  ],
+                                )),
+                          ),
+                          //overweight
+                          GaugeAnnotation(
+                            axisValue: 42,
+                            positionFactor: 0.35,
+                            widget: Padding(
+                                padding: EdgeInsets.only(right: 60.0),
+                                child: CircularText(
+                                  children: [
+                                    TextItem(
+                                      text: Text('Overweight',
+                                          style: GoogleFonts.aBeeZee(
+                                            textStyle: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold),
+                                          )),
+                                      space: 5,
+                                      startAngle: -51,
+                                    )
+                                  ],
+                                )),
+                          ),
+                          //underweight
+                          GaugeAnnotation(
+                            axisValue: 30,
+                            positionFactor: 0.13,
+                            widget: Padding(
+                                padding: EdgeInsets.only(right: 60.0),
+                                child: CircularText(
+                                  children: [
+                                    TextItem(
+                                      text: Text('Underweight',
+                                          style: GoogleFonts.aBeeZee(
+                                            textStyle: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold),
+                                          )),
+                                      space: 5,
+                                      startAngle: -173,
+                                    )
+                                  ],
+                                )),
+                          ),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
-                heightFactor: 0.5,
-              ),
-
-              SizedBox(
-                height: 25.0,
-              ),
-
-              //message to user
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Category',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(
-                        width: 180,
-                      ),
-                      Text(
-                        'Difference',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      )
-                    ],
+                    heightFactor: 0.5,
                   ),
+
                   SizedBox(
-                    height: 5,
+                    height: 40.0,
                   ),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 5,
-                      ),
-                      if (_bmi <= 18.4)
-                        Text(
-                          'Underweight',
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: pointerColor),
-                        )
-                      else
-                        Text(
-                          '$category',
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: pointerColor),
-                        ),
-                      SizedBox(
-                        width: 220,
-                      ),
-                      if (weightDifference != 0.0)
-                        Text(
-                          '$weightDifference',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        )
-                      else
-                        Text(
-                          '...',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                    ],
-                  )
-                ],
-              ),
 
-              Divider(
-                color: Colors.blue[200], // Set the color of the divider
-                height: 50, // Set the height of the divider
-                thickness: 1, // Set the thickness of the divider
-              ),
-
-              //class description
-              Row(
-                children: [
-                  // Column for keys
+                  //message to user
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    // Align keys to the start
-                    children: bmiClasses.keys.map((key) {
-                      return Row(
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 20.0,
+                          ),
+                          Text(
+                            'Category',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(
+                            width: 140,
+                          ),
+                          Text(
+                            'Difference',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                      SizedBox(
+                        height: 7,
+                      ),
+                      Row(
                         children: [
                           SizedBox(
                             width: 10,
                           ),
-                          if (category == key)
+                          if (_bmi == 0.0)
                             Row(
                               children: [
-                                Icon(
-                                  Icons.arrow_right,
-                                  color: pointerColor,
-                                  size: 25,
+                                SizedBox(
+                                  width: 20.0,
                                 ),
                                 Text(
-                                  key,
+                                  '$category',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(
+                                  width: 110.0,
+                                )
+                              ],
+                            )
+                          else
+                            if (_bmi <= 18.4)
+                              Text(
+                                'Underweight',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: pointerColor),
+                              )
+                            else
+                              if (category == 'Normal')
+                                Row(
+                                  children: [
+                                    SizedBox(width: 20.0),
+                                    Text(
+                                      '$category',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: pointerColor),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Text(
+                                  '$category',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: pointerColor),
+                                ),
+                          SizedBox(
+                            width: 130,
+                          ),
+                          if (category == 'Normal')
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 50,
+                                ),
+                                Icon(
+                                  Icons.check,
+                                  color: Colors.green,
+                                  weight: 10.0,
+                                  size: 30,
+                                )
+                              ],
+                            )
+                          else
+                            if (z != 0.0)
+                              Text(
+                                '$weightDifference',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: pointerColor),
+                              )
+                            else
+                              Text(
+                                '...',
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                        ],
+                      )
+                    ],
+                  ),
+
+                  Divider(
+                    color: Colors.blue[200], // Set the color of the divider
+                    height: 40, // Set the height of the divider
+                    thickness: 1, // Set the thickness of the divider
+                  ),
+
+                  //class description
+                  Row(
+                    children: [
+                      // Column for keys
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        // Align keys to the start
+                        children: bmiClasses.keys.map((key) {
+                          return Row(
+                            children: [
+                              SizedBox(
+                                width: 10,
+                              ),
+                              if (category == key)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_right,
+                                      color: pointerColor,
+                                      size: 25,
+                                    ),
+                                    Text(
+                                      key,
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: pointerColor,
+                                          fontWeight: FontWeight.bold),
+                                    )
+                                  ],
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.play_arrow,
+                                      color: Colors.blue[100],
+                                      size: 12,
+                                    ),
+                                    Text(
+                                      key,
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
+                                    )
+                                  ],
+                                )
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                      SizedBox(width: 50), // Add a gap between keys and values
+                      // Column for values
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        // Align values to the start
+                        children: bmiClasses.entries.map((entry) {
+                          return Row(
+                            children: [
+                              if (category == entry.key)
+                                Text(
+                                  entry.value.toString(),
                                   style: TextStyle(
                                       fontSize: 16,
                                       color: pointerColor,
                                       fontWeight: FontWeight.bold),
                                 )
-                              ],
-                            )
-                          else
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.arrow_right,
-                                  color: Colors.blue[100],
-                                  size: 12,
-                                ),
+                              else
                                 Text(
-                                  key,
+                                  entry.value.toString(),
                                   style: TextStyle(
-                                      fontSize: 16, color: Colors.black),
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
                                 )
-                              ],
-                            )
-                        ],
-                      );
-                    }).toList(),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 50), // Add a gap between keys and values
-                  // Column for values
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    // Align values to the start
-                    children: bmiClasses.entries.map((entry) {
-                      return Row(
-                        children: [
-                          if (category == entry.key)
+
+                  Divider(
+                    color: Colors.blue[200], // Set the color of the divider
+                    height: 50, // Set the height of the divider
+                    thickness: 1, // Set the thickness of the divider
+                  ),
+
+                  //Ideal Weight Indicator
+                  Row(
+                    children: [
+                      Text(
+                        'Ideal Weight',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        width: 110,
+                      ),
+                      if (_bmi == 0.0)
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 60.0,
+                            ),
                             Text(
-                              entry.value.toString(),
+                              '...',
                               style: TextStyle(
-                                  fontSize: 16,
-                                  color: pointerColor,
-                                  fontWeight: FontWeight.bold),
-                            )
-                          else
-                            Text(
-                              entry.value.toString(),
-                              style: TextStyle(
-                                fontSize: 16,
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        )
+                      else
+                        if (x == 0)
+                          Text(
+                            '...',
+                            style: TextStyle(
+                              fontSize: 20,
+                            ),
+                          )
+                        else
+                          Text(
+                            '$weightLowerBound - $weightHigherBound kg',
+                            style: TextStyle(
+                                fontSize: 20,
                                 color: Colors.black,
-                              ),
-                            )
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                                fontWeight: FontWeight.bold),
+                          )
+                    ],
+                  )
                 ],
               ),
-
-              Divider(
-                color: Colors.blue[200], // Set the color of the divider
-                height: 50, // Set the height of the divider
-                thickness: 1, // Set the thickness of the divider
-              ),
-
-              //Normal Weight
-              Row(
-                children: [
-                  Text(
-                    'Normal Weight',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  SizedBox(
-                    width: 150,
-                  ),
-                  Text(
-                    'Value',
-                    style: TextStyle(fontSize: 20),
-                  ),
-                ],
-              )
-            ],
+            ),
           ),
-        ),
-      ),
-    ));
+        ));
   }
 }
