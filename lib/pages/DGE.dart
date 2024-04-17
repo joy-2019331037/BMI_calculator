@@ -50,6 +50,8 @@ class _DGEState extends State<DGE> {
 
   double _bmi = 0.0;
 
+  double needleValue = 0.0;
+
   double x = 0.0, y = 0.0, z = 0.0;
   String weightLowerBound = '...';
   String weightHigherBound = '...';
@@ -171,10 +173,45 @@ class _DGEState extends State<DGE> {
     return weight / ((height / 100) * (height / 100));
   }
 
+  void fixNeedleValue() {
+    //this function here is a decoy
+    //fooling the needle not to indicate to the actual _bmi value within gauge range of 0-45
+    //rather it indicates according to the way we want BMI ranges to appear
+    if(gender=="male"){
+      if (_bmi <= 18.0) {
+        needleValue = 0.0;
+      } else if (_bmi > 18.0 && _bmi <= 20.0) {
+        needleValue = (_bmi - 18.0) * (15.0 / 2.0);
+      } else if (_bmi > 20.0 && _bmi <= 25.0) {
+        needleValue = 15.0 + (_bmi - 20.0) * (15.0 / 5.0);
+      } else if (_bmi > 25 && _bmi <= 40) {
+        needleValue = 30.0 + (_bmi - 25);
+      }
+      else if(_bmi>40){
+        needleValue=45.0;
+      }
+    }
+    else{
+      if (_bmi <= 16.0) {
+        needleValue = 0.0;
+      } else if (_bmi > 16.0 && _bmi <= 19.0) {
+        needleValue = (_bmi - 16.0) * (15.0 / 3.0);
+      } else if (_bmi > 19.0 && _bmi <= 24.0) {
+        needleValue = 15.0 + (_bmi - 19.0) * (15.0 / 5.0);
+      } else if (_bmi > 24 && _bmi <= 39) {
+        needleValue = 30.0 + (_bmi - 24);
+      }
+      else if(_bmi>39){
+        needleValue=45.0;
+      }
+    }
+  }
+
   void updateBMI() {
     setState(() {
       _bmi = calculateBMI(double.parse(_heightText), _convertWeightToKg());
       updateBMIClass();
+      fixNeedleValue();
     });
   }
 
@@ -204,6 +241,7 @@ class _DGEState extends State<DGE> {
     femalegenderColor = Colors.black45;
 
     _bmi = 0.0;
+    needleValue=0.0;
 
     x = 0.0;
     y = 0.0;
@@ -544,7 +582,7 @@ class _DGEState extends State<DGE> {
                       ],
                       pointers: [
                         NeedlePointer(
-                          value: _bmi,
+                          value: needleValue,
                           enableAnimation: true,
                           knobStyle: KnobStyle(knobRadius: 0),
                           needleStartWidth: 1,
@@ -579,14 +617,18 @@ class _DGEState extends State<DGE> {
                           positionFactor: 0.38,
                           widget: Padding(
                               padding: EdgeInsets.only(right: 60.0),
-                              child: Text('16'),
-                        ),),
+                              child: gender == "male"
+                                  ? Text('18')
+                                  : Text('16')),
+                        ),
                         GaugeAnnotation(
                           axisValue: 45,
                           positionFactor: 0.7,
                           widget: Padding(
                               padding: EdgeInsets.only(right: 60.0),
-                              child: Text('40')),
+                              child: gender == "male"
+                                  ? Text('40')
+                                  : Text('39')),
                         ),
                         GaugeAnnotation(
                           axisValue: 21.5,
