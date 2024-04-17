@@ -5,14 +5,14 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_circular_text/circular_text.dart';
 
-class Home extends StatefulWidget {
-  const Home({super.key});
+class WHO extends StatefulWidget {
+  const WHO({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  State<WHO> createState() => _WHOState();
 }
 
-class _HomeState extends State<Home> {
+class _WHOState extends State<WHO> {
   Map<String, String> bmiClasses = {
     'Very Severely Underweight': '≤ 15.9',
     'Severely Underweight': '16.0 - 16.9',
@@ -164,7 +164,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    print('speaking from home');
     return SafeArea(
         child: Scaffold(
           backgroundColor: Colors.blue[100],
@@ -186,25 +185,17 @@ class _HomeState extends State<Home> {
               },
             ),
             actions: [
-              PopupMenuButton<int>( // Use a generic type for flexibility
-                onSelected: (result) {
-                  if (result == 0) {
-                    Navigator.pushNamed(context, '/settings'); // Navigate to settings page
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 0, // Associate a value with the menu item for selection handling
-                    child: Row(
+              PopupMenuButton(
+                  itemBuilder: (context)=>[
+                    PopupMenuItem(child: Row(
                       children: [
-                        const Icon(Icons.settings), // Add an icon for visual appeal
-                        const SizedBox(width: 10.0), // Add spacing for better readability
-                        const Text('Settings'),
+                        Container(
+                          child: const Text('settings'),
+
+                        )
                       ],
-                    ),
-                  ),
-                ],
-              ),
+                    ))
+                  ])
             ],
             backgroundColor: Colors.blue,
           ),
@@ -399,170 +390,170 @@ class _HomeState extends State<Home> {
                   Align(
                     child: SfRadialGauge(
                       axes: [
-                      RadialAxis(
-                      startAngle: 180,
-                      endAngle: 0,
-                      minimum: 0,
-                      maximum: 45,
-                      showLabels: false,
-                      canScaleToFit: true,
+                        RadialAxis(
+                          startAngle: 180,
+                          endAngle: 0,
+                          minimum: 0,
+                          maximum: 45,
+                          showLabels: false,
+                          canScaleToFit: true,
 
-                      labelOffset: 65,
-                      // Adjust distance between labels and axis line
-                      maximumLabels: 3,
-                      ranges: [
-                        GaugeRange(
-                          startWidth: 70,
-                          endWidth: 70,
-                          startValue: 0,
-                          endValue: 15,
-                          color: Colors.blueAccent,
-                        ),
-                        GaugeRange(
-                          startWidth: 70,
-                          endWidth: 70,
-                          startValue: 15,
-                          endValue: 30,
-                          color: Colors.green,
-                        ),
-                        GaugeRange(
-                          startWidth: 70,
-                          endWidth: 70,
-                          startValue: 30,
-                          endValue: 45,
-                          color: Colors.red,
-                          //   label: 'Overweight',
-                          //   labelStyle:
-                          //       GaugeTextStyle(fontSize: 15, color: Colors.white),
-                          //
-                        ),
-                      ],
-                      pointers: [
-                        NeedlePointer(
-                          value: _bmi,
-                          enableAnimation: true,
-                          knobStyle: KnobStyle(knobRadius: 0),
-                          needleStartWidth: 1,
-                          needleEndWidth: 50,
-                          needleLength: 0.7,
-                          needleColor: Colors.blue[100],
-                          enableDragging: true,
-                        ),
-                      ],
-                      annotations: [
-                        //bmivalue
-                        GaugeAnnotation(
-                          widget: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('BMI',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20)),
-                              Text('${_bmi.toStringAsFixed(1)}',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                      color: pointerColor)),
-                            ],
-                          ),
-                        ),
+                          labelOffset: 65,
+                          // Adjust distance between labels and axis line
+                          maximumLabels: 3,
+                          ranges: [
+                            GaugeRange(
+                              startWidth: 70,
+                              endWidth: 70,
+                              startValue: 0,
+                              endValue: 15,
+                              color: Colors.blueAccent,
+                            ),
+                            GaugeRange(
+                              startWidth: 70,
+                              endWidth: 70,
+                              startValue: 15,
+                              endValue: 30,
+                              color: Colors.green,
+                            ),
+                            GaugeRange(
+                              startWidth: 70,
+                              endWidth: 70,
+                              startValue: 30,
+                              endValue: 45,
+                              color: Colors.red,
+                              //   label: 'Overweight',
+                              //   labelStyle:
+                              //       GaugeTextStyle(fontSize: 15, color: Colors.white),
+                              //
+                            ),
+                          ],
+                          pointers: [
+                            NeedlePointer(
+                              value: _bmi,
+                              enableAnimation: true,
+                              knobStyle: KnobStyle(knobRadius: 0),
+                              needleStartWidth: 1,
+                              needleEndWidth: 50,
+                              needleLength: 0.7,
+                              needleColor: Colors.blue[100],
+                              enableDragging: true,
+                            ),
+                          ],
+                          annotations: [
+                            //bmivalue
+                            GaugeAnnotation(
+                              widget: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('BMI',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20)),
+                                  Text('${_bmi.toStringAsFixed(1)}',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                          color: pointerColor)),
+                                ],
+                              ),
+                            ),
 
-                        GaugeAnnotation(
-                          axisValue: 0,
-                          positionFactor: 0.38,
-                          widget: Padding(
-                              padding: EdgeInsets.only(right: 60.0),
-                              child: Text('16')),
-                        ),
-                        GaugeAnnotation(
-                          axisValue: 45,
-                          positionFactor: 0.7,
-                          widget: Padding(
-                              padding: EdgeInsets.only(right: 60.0),
-                              child: Text('40')),
-                        ),
-                        GaugeAnnotation(
-                          axisValue: 21.5,
-                          positionFactor: 0.49,
-                          widget: Padding(
-                            padding: EdgeInsets.only(right: 60.0),
-                            child: Text('18.5')
-                          ),
-                        ),
-                          GaugeAnnotation(
-                            axisValue: 32,
-                            positionFactor: 0.62,
-                            widget: Padding(
-                                padding: EdgeInsets.only(right: 60.0),
-                                child: Text('25')),
-                          ),
-                          //Normal
-                          GaugeAnnotation(
-                            axisValue: 36,
-                            positionFactor: 0.25,
-                            widget: Padding(
-                                padding: EdgeInsets.only(right: 60.0),
-                                child: CircularText(
-                                  children: [
-                                    TextItem(
-                                      text: Text('Normal',
-                                          style: GoogleFonts.aBeeZee(
-                                            textStyle: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold),
-                                          )),
-                                      space: 6,
-                                      startAngle: -103,
-                                    )
-                                  ],
-                                )),
-                          ),
-                          //overweight
-                          GaugeAnnotation(
-                            axisValue: 42,
-                            positionFactor: 0.35,
-                            widget: Padding(
-                                padding: EdgeInsets.only(right: 60.0),
-                                child: CircularText(
-                                  children: [
-                                    TextItem(
-                                      text: Text('Overweight',
-                                          style: GoogleFonts.aBeeZee(
-                                            textStyle: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold),
-                                          )),
-                                      space: 5,
-                                      startAngle: -51,
-                                    )
-                                  ],
-                                )),
-                          ),
-                          //underweight
-                          GaugeAnnotation(
-                            axisValue: 30,
-                            positionFactor: 0.13,
-                            widget: Padding(
-                                padding: EdgeInsets.only(right: 60.0),
-                                child: CircularText(
-                                  children: [
-                                    TextItem(
-                                      text: Text('Underweight',
-                                          style: GoogleFonts.aBeeZee(
-                                            textStyle: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold),
-                                          )),
-                                      space: 5,
-                                      startAngle: -173,
-                                    )
-                                  ],
-                                )),
-                          ),
+                            GaugeAnnotation(
+                              axisValue: 0,
+                              positionFactor: 0.38,
+                              widget: Padding(
+                                  padding: EdgeInsets.only(right: 60.0),
+                                  child: Text('16')),
+                            ),
+                            GaugeAnnotation(
+                              axisValue: 45,
+                              positionFactor: 0.7,
+                              widget: Padding(
+                                  padding: EdgeInsets.only(right: 60.0),
+                                  child: Text('40')),
+                            ),
+                            GaugeAnnotation(
+                              axisValue: 21.5,
+                              positionFactor: 0.49,
+                              widget: Padding(
+                                  padding: EdgeInsets.only(right: 60.0),
+                                  child: Text('18.5')
+                              ),
+                            ),
+                            GaugeAnnotation(
+                              axisValue: 32,
+                              positionFactor: 0.62,
+                              widget: Padding(
+                                  padding: EdgeInsets.only(right: 60.0),
+                                  child: Text('25')),
+                            ),
+                            //Normal
+                            GaugeAnnotation(
+                              axisValue: 36,
+                              positionFactor: 0.25,
+                              widget: Padding(
+                                  padding: EdgeInsets.only(right: 60.0),
+                                  child: CircularText(
+                                    children: [
+                                      TextItem(
+                                        text: Text('Normal',
+                                            style: GoogleFonts.aBeeZee(
+                                              textStyle: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 17,
+                                                  fontWeight: FontWeight.bold),
+                                            )),
+                                        space: 6,
+                                        startAngle: -103,
+                                      )
+                                    ],
+                                  )),
+                            ),
+                            //overweight
+                            GaugeAnnotation(
+                              axisValue: 42,
+                              positionFactor: 0.35,
+                              widget: Padding(
+                                  padding: EdgeInsets.only(right: 60.0),
+                                  child: CircularText(
+                                    children: [
+                                      TextItem(
+                                        text: Text('Overweight',
+                                            style: GoogleFonts.aBeeZee(
+                                              textStyle: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 17,
+                                                  fontWeight: FontWeight.bold),
+                                            )),
+                                        space: 5,
+                                        startAngle: -51,
+                                      )
+                                    ],
+                                  )),
+                            ),
+                            //underweight
+                            GaugeAnnotation(
+                              axisValue: 30,
+                              positionFactor: 0.13,
+                              widget: Padding(
+                                  padding: EdgeInsets.only(right: 60.0),
+                                  child: CircularText(
+                                    children: [
+                                      TextItem(
+                                        text: Text('Underweight',
+                                            style: GoogleFonts.aBeeZee(
+                                              textStyle: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 17,
+                                                  fontWeight: FontWeight.bold),
+                                            )),
+                                        space: 5,
+                                        startAngle: -173,
+                                      )
+                                    ],
+                                  )),
+                            ),
                           ],
                         ),
                       ],
