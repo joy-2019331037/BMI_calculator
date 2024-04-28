@@ -41,11 +41,6 @@ This app helps users calculate their Body Mass Index (BMI) based on their height
 3. Select the appropriate units for height and weight.
 4. View your BMI value and classification on the radial gauge.
 
-## Supported Platforms
-
-- Android
-- iOS
-- Web
 
 ## Dependencies
 
