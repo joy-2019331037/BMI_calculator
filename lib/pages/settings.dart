@@ -8,31 +8,19 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  Color _selectedColor = Colors.black; // Initial selection (WHO)
-  int genderDependent = 0;
-
-  void updateDependency() {
-    if (_selectedColor != Colors.black) {
-      setState(() {
-        genderDependent = 1;
-      });
-    } else {
-      setState(() {
-        genderDependent = 0;
-      });
-    }
-  }
+  bool isDGE = false;
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
         onWillPop: () async {
-          if (_selectedColor == Colors.black) {
+          //print('2');
+          if (!isDGE) {
             Navigator.pushReplacementNamed(context, '/home'); // Go to home
           } else {
             Navigator.pushReplacementNamed(context, '/dge'); // Go to dge
           }
-          return true; // Allow pop
+          return false; // Allow pop
         },
         child: Scaffold(
           backgroundColor: Colors.blue[100],
@@ -40,6 +28,21 @@ class _SettingsState extends State<Settings> {
             title: const Text('Settings'),
             centerTitle: true,
             backgroundColor: Colors.blue,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_outlined,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                //print('1');
+                if (!isDGE) {
+                  Navigator.pushReplacementNamed(
+                      context, '/home'); // Go to home
+                } else {
+                  Navigator.pushReplacementNamed(context, '/dge'); // Go to dge
+                }
+              },
+            ),
           ),
           body: Padding(
               padding: EdgeInsets.fromLTRB(15, 20, 20, 0),
@@ -66,17 +69,15 @@ class _SettingsState extends State<Settings> {
                         width: 1.0, // Change this to your desired border width
                       ),
                     ),
-                    child: DropdownButtonFormField<Color>(
-                      value: _selectedColor,
+                    child: DropdownButtonFormField<bool>(
+                      value: isDGE,
                       items: [
-                        DropdownMenuItem(
-                            value: Colors.black, child: Text('WHO')),
-                        DropdownMenuItem(value: Colors.red, child: Text('DGE')),
+                        DropdownMenuItem(value: false, child: Text('WHO')),
+                        DropdownMenuItem(value: true, child: Text('DGE')),
                       ],
-                      onChanged: (Color? newValue) {
+                      onChanged: (bool? newValue) {
                         setState(() {
-                          _selectedColor = newValue!;
-                          updateDependency();
+                          isDGE = newValue!;
                         });
                       },
                       decoration: InputDecoration(
@@ -95,7 +96,7 @@ class _SettingsState extends State<Settings> {
                   SizedBox(
                     height: 10,
                   ),
-                  if (genderDependent == 1)
+                  if (isDGE)
                     Text('( Gender Dependent )')
                   else
                     Text('( Gender Independent )'),

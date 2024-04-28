@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_circular_text/circular_text/model.dart';
+import 'package:flutter/services.dart';
+
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_circular_text/circular_text.dart';
@@ -118,18 +118,7 @@ class _DGEState extends State<DGE> {
       }
     }
 
-    print(category);
-  }
-
-  void updateBMIFromFeetInches() {
-    double feet = double.parse(_feetController.text);
-    double inches = double.parse(_inchesController.text);
-    double totalInches = feet * 12 + inches; // Convert feet to inches
-    double height = totalInches * 2.54; // Convert inches to cm
-    setState(() {
-      _heightText = height.toString();
-      updateBMI();
-    });
+    //print(category);
   }
 
   void updateWeightRange(double height, double weight) {
@@ -177,7 +166,7 @@ class _DGEState extends State<DGE> {
     //this function here is a decoy
     //fooling the needle not to indicate to the actual _bmi value within gauge range of 0-45
     //rather it indicates according to the way we want BMI ranges to appear
-    if(gender=="male"){
+    if (gender == "male") {
       if (_bmi <= 18.0) {
         needleValue = 0.0;
       } else if (_bmi > 18.0 && _bmi <= 20.0) {
@@ -186,12 +175,10 @@ class _DGEState extends State<DGE> {
         needleValue = 15.0 + (_bmi - 20.0) * (15.0 / 5.0);
       } else if (_bmi > 25 && _bmi <= 40) {
         needleValue = 30.0 + (_bmi - 25);
+      } else if (_bmi > 40) {
+        needleValue = 45.0;
       }
-      else if(_bmi>40){
-        needleValue=45.0;
-      }
-    }
-    else{
+    } else {
       if (_bmi <= 16.0) {
         needleValue = 0.0;
       } else if (_bmi > 16.0 && _bmi <= 19.0) {
@@ -200,23 +187,69 @@ class _DGEState extends State<DGE> {
         needleValue = 15.0 + (_bmi - 19.0) * (15.0 / 5.0);
       } else if (_bmi > 24 && _bmi <= 39) {
         needleValue = 30.0 + (_bmi - 24);
-      }
-      else if(_bmi>39){
-        needleValue=45.0;
+      } else if (_bmi > 39) {
+        needleValue = 45.0;
       }
     }
   }
 
+  void updateBMIFromFeetInches() {
+    double feet = 0, inches = 0;
+    if (_feetController.text.isEmpty)
+      setState(() {
+        _bmi = 0;
+        category = '...';
+      });
+    else
+      feet = double.parse(_feetController.text);
+
+    if (_inchesController.text.isEmpty)
+      setState(() {
+        _bmi = 0;
+        category = '...';
+      });
+    else {
+      inches = double.parse(_inchesController.text);
+    }
+
+    double totalInches = feet * 12 + inches; // Convert feet to inches
+    double height = totalInches * 2.54; // Convert inches to cm
+    setState(() {
+      _heightText = height.toString();
+    });
+    updateBMI();
+  }
+
   void updateBMI() {
+    if ((_heightController.text.isEmpty || _weightController.text.isEmpty) &&
+        _selectedHeightType == 'cm') {
+      setState(() {
+        _bmi = 0;
+        category = '...';
+      });
+      return;
+    } else if (_selectedHeightType == 'ft' &&
+        (_feetController.text.isEmpty ||
+            _inchesController.text.isEmpty ||
+            _weightController.text.isEmpty)) {
+      setState(() {
+        _bmi = 0;
+        category = '...';
+      });
+      return;
+    }
     setState(() {
       _bmi = calculateBMI(double.parse(_heightText), _convertWeightToKg());
-      updateBMIClass();
-      fixNeedleValue();
     });
+
+    updateBMIClass();
+    fixNeedleValue();
   }
 
   double _convertWeightToKg() {
-    double weight = double.parse(_weightText);
+    double weight = 0;
+    if (_weightController.text.isNotEmpty)
+      weight = double.parse(_weightController.text);
     if (_selectedWeightType == 'lb') {
       //because 1 pound equals to 0.4535 kg
       weight *= 0.4535;
@@ -241,7 +274,7 @@ class _DGEState extends State<DGE> {
     femalegenderColor = Colors.black45;
 
     _bmi = 0.0;
-    needleValue=0.0;
+    needleValue = 0.0;
 
     x = 0.0;
     y = 0.0;
@@ -257,9 +290,8 @@ class _DGEState extends State<DGE> {
 
   @override
   Widget build(BuildContext context) {
-    print('speaking from dge');
-    return SafeArea(
-        child: Scaffold(
+    print('from dge');
+    return Scaffold(
       backgroundColor: Colors.blue[100],
       appBar: AppBar(
         title: Text(
@@ -283,7 +315,7 @@ class _DGEState extends State<DGE> {
             // Use a generic type for flexibility
             onSelected: (result) {
               if (result == 0) {
-                Navigator.pushNamed(
+                Navigator.pushReplacementNamed(
                     context, '/settings'); // Navigate to settings page
               }
             },
@@ -314,72 +346,112 @@ class _DGEState extends State<DGE> {
             children: [
               //height field
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(0.0),
-                        width: 25.0, //
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.man,
-                            size: 40,
-                            color: malegenderColor,
-                          ),
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(),
-                          onPressed: () {
-                            setState(() {
-                              gender = "male";
-                              print(gender);
-                              updateGenderColor();
-                              updateBMI();
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: 7,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(0.0),
-                        width: 25.0,
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.woman,
-                            size: 40,
-                            color: femalegenderColor,
-                          ),
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(),
-                          onPressed: () {
-                            setState(() {
-                              gender = "female";
-                              print(gender);
-                              updateGenderColor();
-                              updateBMI();
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                  // Row(
+                  //   // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //   children: [
+                  //     IconButton(
+                  //       icon: Icon(
+                  //         Icons.man,
+                  //         size: 40,
+                  //         color: malegenderColor,
+                  //       ),
+                  //       // constraints: BoxConstraints(),
+                  //       onPressed: () {
+                  //         setState(() {
+                  //           gender = "male";
+                  //           print(gender);
+                  //           updateGenderColor();
+                  //           updateBMI();
+                  //         });
+                  //       },
+                  //     ),
+                  //     IconButton(
+                  //       icon: Icon(
+                  //         Icons.woman,
+                  //         size: 40,
+                  //         color: femalegenderColor,
+                  //       ),
+                  //       onPressed: () {
+                  //         setState(() {
+                  //           gender = "female";
+                  //           print(gender);
+                  //           updateGenderColor();
+                  //           updateBMI();
+                  //         });
+                  //       },
+                  //     ),
+                  //   ],
+                  // ),
+                  // IconButton(
+                  //   icon: Icon(
+                  //     Icons.man,
+                  //     size: 40,
+                  //     color: malegenderColor,
+                  //   ),
+                  //   padding: EdgeInsets.zero,
+                  //   // constraints: BoxConstraints(),
+                  //   onPressed: () {
+                  //     setState(() {
+                  //       gender = "male";
+                  //       print(gender);
+                  //       updateGenderColor();
+                  //       updateBMI();
+                  //     });
+                  //   },
+                  // ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        setState(() {
+                          gender = "male";
+                          print(gender);
+                          updateGenderColor();
+                        });
+                      });
+                      updateBMI();
+                    },
+                    child: Icon(
+                      Icons.man,
+                      size: 40,
+                      color: malegenderColor,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        gender = "female";
+                        print(gender);
+                        updateGenderColor();
+                      });
+                      updateBMI();
+                    },
+                    child: Icon(
+                      Icons.woman,
+                      size: 40,
+                      color: femalegenderColor,
+                    ),
                   ),
                   SizedBox(
-                    width: 50.0,
+                    width: 20,
                   ),
                   if (_selectedHeightType == 'cm')
                     Expanded(
                       flex: 2,
                       child: TextField(
                         controller: _heightController,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(4),
+                          FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*$'))
+                        ],
                         keyboardType: TextInputType.number,
                         onChanged: (value) {
                           setState(() {
                             _heightText = value;
-                            updateBMI();
                           });
+                          updateBMI();
                         },
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 18.0, letterSpacing: 1.5),
@@ -402,6 +474,10 @@ class _DGEState extends State<DGE> {
                             flex: 1,
                             child: TextField(
                               controller: _feetController,
+                              inputFormatters: [
+                                LengthLimitingTextInputFormatter(1),
+                                FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*$'))
+                              ],
                               keyboardType: TextInputType.number,
                               onChanged: (value) {
                                 updateBMIFromFeetInches();
@@ -426,6 +502,10 @@ class _DGEState extends State<DGE> {
                             flex: 1,
                             child: TextField(
                               controller: _inchesController,
+                              inputFormatters: [
+                                LengthLimitingTextInputFormatter(2),
+                                FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*$'))
+                              ],
                               keyboardType: TextInputType.number,
                               onChanged: (value) {
                                 updateBMIFromFeetInches();
@@ -454,8 +534,8 @@ class _DGEState extends State<DGE> {
                     onChanged: (newValue) {
                       setState(() {
                         _selectedHeightType = newValue!;
-                        updateBMI();
                       });
+                      updateBMI();
                     },
                     dropdownColor: Colors.blue[100],
                     underline: Container(),
@@ -495,12 +575,16 @@ class _DGEState extends State<DGE> {
                     flex: 2,
                     child: TextField(
                       controller: _weightController,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(4),
+                        FilteringTextInputFormatter.allow(RegExp(r'^[0-9]*$')),
+                      ],
                       keyboardType: TextInputType.number,
                       onChanged: (value) {
                         setState(() {
                           _weightText = value;
-                          updateBMI();
                         });
+                        updateBMI();
                       },
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18.0, letterSpacing: 1.5),
@@ -518,8 +602,8 @@ class _DGEState extends State<DGE> {
                     onChanged: (newValue) {
                       setState(() {
                         _selectedWeightType = newValue!;
-                        updateBMI();
                       });
+                      updateBMI();
                     },
                     dropdownColor: Colors.blue[100],
                     underline: Container(),
@@ -617,36 +701,32 @@ class _DGEState extends State<DGE> {
                           positionFactor: 0.38,
                           widget: Padding(
                               padding: EdgeInsets.only(right: 60.0),
-                              child: gender == "male"
-                                  ? Text('18')
-                                  : Text('16')),
+                              child:
+                                  gender == "male" ? Text('18') : Text('16')),
                         ),
                         GaugeAnnotation(
                           axisValue: 45,
                           positionFactor: 0.7,
                           widget: Padding(
                               padding: EdgeInsets.only(right: 60.0),
-                              child: gender == "male"
-                                  ? Text('40')
-                                  : Text('39')),
+                              child:
+                                  gender == "male" ? Text('40') : Text('39')),
                         ),
                         GaugeAnnotation(
                           axisValue: 21.5,
                           positionFactor: 0.49,
                           widget: Padding(
                               padding: EdgeInsets.only(right: 60.0),
-                              child: gender == "male"
-                                  ? Text('20')
-                                  : Text('19')),
+                              child:
+                                  gender == "male" ? Text('20') : Text('19')),
                         ),
                         GaugeAnnotation(
                           axisValue: 32,
                           positionFactor: 0.62,
                           widget: Padding(
                               padding: EdgeInsets.only(right: 60.0),
-                              child: gender == "male"
-                                  ? Text('25')
-                                  : Text('24')),
+                              child:
+                                  gender == "male" ? Text('25') : Text('24')),
                         ),
                         //Normal
                         GaugeAnnotation(
@@ -729,17 +809,12 @@ class _DGEState extends State<DGE> {
               Column(
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      SizedBox(
-                        width: 20.0,
-                      ),
                       Text(
                         'Category',
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(
-                        width: 140,
                       ),
                       Text(
                         'Difference',
@@ -748,75 +823,32 @@ class _DGEState extends State<DGE> {
                       )
                     ],
                   ),
-                  SizedBox(
-                    height: 7,
-                  ),
+                  SizedBox(height: 7),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      SizedBox(
-                        width: 10,
+                      Text(
+                        category,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: pointerColor,
+                        ),
                       ),
-                      if (_bmi == 0.0)
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 20.0,
-                            ),
-                            Text(
-                              '$category',
-                              style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(
-                              width: 110.0,
-                            )
-                          ],
-                        )
-                      else if (_bmi <= 18.4)
+                      if (_bmi == 0)
                         Text(
-                          'Underweight',
+                          '...',
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: pointerColor),
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
                         )
                       else if (category == 'Normal')
-                        Row(
-                          children: [
-                            SizedBox(width: 20.0),
-                            Text(
-                              '$category',
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: pointerColor),
-                            ),
-                          ],
-                        )
-                      else
-                        Text(
-                          '$category',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: pointerColor),
-                        ),
-                      SizedBox(
-                        width: 130,
-                      ),
-                      if (category == 'Normal')
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 50,
-                            ),
-                            Icon(
-                              Icons.check,
-                              color: Colors.green,
-                              weight: 10.0,
-                              size: 30,
-                            )
-                          ],
+                        Icon(
+                          Icons.check,
+                          color: Colors.green,
+                          weight: 10.0,
+                          size: 30,
                         )
                       else if (z != 0.0)
                         Text(
@@ -826,12 +858,6 @@ class _DGEState extends State<DGE> {
                               fontWeight: FontWeight.bold,
                               color: pointerColor),
                         )
-                      else
-                        Text(
-                          '...',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
                     ],
                   )
                 ],
@@ -1012,13 +1038,11 @@ class _DGEState extends State<DGE> {
 
               //Ideal Weight Indicator
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Text(
                     'Ideal Weight',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(
-                    width: 110,
                   ),
                   if (_bmi == 0.0)
                     Row(
@@ -1044,9 +1068,10 @@ class _DGEState extends State<DGE> {
                     Text(
                       '$weightLowerBound - $weightHigherBound kg',
                       style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold),
+                        fontSize: 20,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
                     )
                 ],
               )
@@ -1054,6 +1079,6 @@ class _DGEState extends State<DGE> {
           ),
         ),
       ),
-    ));
+    );
   }
 }
